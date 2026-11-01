@@ -7,7 +7,7 @@ exports.handler = async (event) => {
   console.log('Workflow input:', JSON.stringify(event));
 
   // Demo the Retry/Catch path: start an execution with {"simulateFailure": true}
-  if (event.simulateFailure) {
+  if (event.simulateFailure === true) {
     throw new Error('Simulated failure to demonstrate Step Functions retries');
   }
 
@@ -19,6 +19,7 @@ exports.handler = async (event) => {
     parameter: Parameter.Name,
     greeting: Parameter.Value,
     parameterVersion: Parameter.Version,
-    requestedAt: event.requestedAt,
+    requestedAt: event.meta && event.meta.requestedAt,
+    executionName: event.meta && event.meta.executionName,
   };
 };

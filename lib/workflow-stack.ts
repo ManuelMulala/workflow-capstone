@@ -34,11 +34,14 @@ export class WorkflowStack extends cdk.Stack {
     greeting.grantRead(fn);
 
     // 3. Workflow states
+    // Adds execution metadata under $.meta and keeps the original input intact,
+    // so any input (including {}) works and optional fields like simulateFailure pass through.
     const prepare = new sfn.Pass(this, 'PrepareInput', {
       parameters: {
         'requestedAt.$': '$$.Execution.StartTime',
-        'simulateFailure.$': 'States.ArrayContains(States.Array(true), $.simulateFailure)',
+        'executionName.$': '$$.Execution.Name',
       },
+      resultPath: '$.meta',
     });
 
     const wait = new sfn.Wait(this, 'WaitBeforeTask', {
