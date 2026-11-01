@@ -18,16 +18,18 @@ export class WorkflowStack extends cdk.Stack {
     });
 
     // 2. Lambda that reads the parameter
+    const logGroup = new logs.LogGroup(this, 'WorkflowTaskLogs', {
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const fn = new lambda.Function(this, 'WorkflowTask', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset('lambda'),
       timeout: cdk.Duration.seconds(10),
       environment: { PARAM_NAME: greeting.parameterName },
-      logGroup: new logs.LogGroup(this, 'WorkflowTaskLogs', {
-        retention: logs.RetentionDays.ONE_WEEK,
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
-      }),
+      logGroup,
     });
 
     // Least privilege: read access to this one parameter only
@@ -79,6 +81,6 @@ export class WorkflowStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'StateMachineArn', { value: stateMachine.stateMachineArn });
-    new cdk.CfnOutput(this, 'LambdaLogGroup', { value: `/aws/lambda/${fn.functionName}` });
+    new cdk.CfnOutput(this, 'LambdaLogGroup', { value: logGroup.logGroupName });
   }
 }
